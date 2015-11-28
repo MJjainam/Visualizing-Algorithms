@@ -1,4 +1,9 @@
-document.getElementById("canvas").addEventListener("click", create_vertex);
+window.addEventListener("load", foo);
+
+function foo(){
+	document.getElementById("canvas").addEventListener("click", create_vertex);
+}
+
 var count = 0;
 
 //-----------------------------------------------------------------------------------------------------------------------------------
@@ -24,6 +29,7 @@ function _add_vertex(vertex){
 	V.Adj = new Array();
 	Graph.Vertices.push(V);
 }
+
 
 function _add_edge(origin,endpoint,line){
 /*
@@ -225,7 +231,7 @@ function createLine(start_div, end_div, x1, y1, x2, y2){
 	var line = document.createElement("div");	//creating the div that contains the line
 
 	line.className = "line";					//class = line has css predefined css stylings in style.css
-	line.id = "edge_" + start_div.id + "_" + end_div.id;									//id has the syntax edge_origin-vertex-id_destination-vertex-id
+	line.id = "edge_" + start_div.id + "_" + end_div.id;		//id has the syntax edge_origin-vertex-id_destination-vertex-id
 	
 	//stylings of the line
 	line.style.position = "absolute";
@@ -255,7 +261,6 @@ function DFS(){
 		v = Graph.Vertices[i];
 		if(v.element.style.backgroundColor == "white")
 		{
-			//DFS_counter = DFS_counter + 2;
 			DFS_Visit(v);
 		}
 	}
@@ -273,7 +278,8 @@ function DFS_Visit(u){
 		v = u.Adj[j];
 		if (v.element.style.backgroundColor == "white")
 		{
-			//DFS_counter = DFS_counter + 2;
+			DFS_counter = DFS_counter + 2;
+			color_edge(u,v,DFS_counter);		//To color the edge just discovered
 			DFS_Visit(v);
 		}
 	}
@@ -285,6 +291,7 @@ function DFS_Visit(u){
 
 //----------------------Queue for BFS-------------------------
 //------------------------------------------------------------
+
 var Queue = new Object();
 Queue._data= new Array();
 Queue.front = 0;
@@ -311,8 +318,10 @@ Queue.enqueue = _enqueue;
 Queue.dequeue = _dequeue;
 Queue.is_empty = _is_empty;
 Queue.disp = _disp;
+
 //---------------------------------------------------------------
 //---------------------------------------------------------------
+
 function BFS(){
 
 	var BFS_counter = 0;
@@ -326,19 +335,41 @@ function BFS(){
 	{
 		u = Queue.dequeue();
 
+		BFS_counter = BFS_counter + 2;
+		u.element.style.transitionDelay = BFS_counter + "s";
+		u.element.style.backgroundColor = "#1aff8d";
+
 		var j;
 		for(j=0; j < u.Adj.length; j++)
 		{
 			v = u.Adj[j];
 			if(v.element.style.backgroundColor == "white")
 			{
+				BFS_counter = BFS_counter + 2;
 				Queue.enqueue(v);
+				color_edge(u,v,BFS_counter);	//To color the edge just discovered
 			}
 		}
 
-		BFS_counter = BFS_counter + 2;
-		u.element.style.transitionDelay = BFS_counter + "s";
-		u.element.style.backgroundColor = "#1aff8d";
+	}
+}
+
+//-----------------------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------Common Functions---------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------
+
+
+function color_edge(source,endpoint,count)
+{
+	var i;
+	for(i=0; i < Graph.Edges.length; i++)
+	{
+		if((Graph.Edges[i].origin.id == source.element.id && Graph.Edges[i].endpoint.id == endpoint.element.id) || (Graph.Edges[i].origin.id == endpoint.element.id && Graph.Edges[i].endpoint.id == source.element.id))
+		{
+			Graph.Edges[i].line.style.transitionDelay = count + "s";
+			Graph.Edges[i].line.style.backgroundColor = "white";
+
+		}
 	}
 }
 
@@ -356,14 +387,20 @@ function get_source_vertex(name){
 	return Graph.Vertices[0];
 }
 
+
 function Restart(){
-	//alert("bro");
 	var i;
 	for(i=0; i < Graph.Vertices.length; i++)
 	{
 		//Graph.Vertices[i].element.style.transitionDuration = "0s";
 		Graph.Vertices[i].element.style.transitionDelay = "0s";
 		Graph.Vertices[i].element.style.backgroundColor = "white";
+	}
+
+	for(i=0; i < Graph.Edges.length; i++)
+	{
+		Graph.Edges[i].line.style.transitionDelay = "0s";
+		Graph.Edges[i].line.style.backgroundColor = "black";
 	}
 }
 
