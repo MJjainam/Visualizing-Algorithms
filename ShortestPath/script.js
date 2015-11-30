@@ -27,24 +27,29 @@ function _add_vertex(vertex){
 	var V = new Object();	
 	V.element = vertex;
 	V.Adj = new Array();
+
 	Graph.Vertices.push(V);
 }
 
 
-function _add_edge(origin,endpoint,line){
+function _add_edge(origin,endpoint,line,weight){
 /*
 	Create a new "edge" Object which has the following attributes:
 		origin : a HTML div element corresponding to the origin vertex of the edge
 		endpoint : a HTML div element corresponding to the endpoint vertex of the edge
+		weight : a number that represents the weight of the edge
 		line : a reference to the HTML div element the contains the line corresponding to the edge
 
   	The edge object is then pushed into array "Graph.Edges" 
   	The adjacency lists of the origin and endpoint vertices are modified here
 */
-	edge = new Object();		
+	edge = new Object();	
 	edge.origin = origin;		
 	edge.endpoint = endpoint;
+	edge.weight = weight;
+	edge.weight = weight;
 	edge.line = line;
+
 	Graph.Edges.push(edge);
 
 	s = get_graph_vertex(origin);
@@ -113,7 +118,7 @@ function _show_edges(){			//Display all the edges of the graph
 	var i;
 	for(i=0; i < this.Edges.length; i++)
 	{
-		alert(this.Edges[i].line.id);
+		alert(this.Edges[i].weight);
 	}
 }
 
@@ -221,6 +226,7 @@ function get_destination_coordinates(){
 	start_div = null;
 	end_div = null;	
 }
+
 
 function createLine(start_div, end_div, x1, y1, x2, y2){
 
