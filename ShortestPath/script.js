@@ -20,6 +20,8 @@ function _add_vertex(vertex){
 	Create a new Vertex ojbect which has the following attributes :
 		element : contains the HTML div element corresponding the vertex of the graph in the DOM
 		Adj : an array of all the vertices that are adjacent to the current vertex (Adjacency List)
+		distance : a number that tells it's distance from the source vertex
+		_parent : a pointer that points to it's predecessor in the shortest path
 
 	The Vertex object is then pushed into array "Graph.Vertices"
 	The Array "Graph.Vertices" is the required Adjacency List representation of the graph
@@ -27,6 +29,9 @@ function _add_vertex(vertex){
 	var V = new Object();	
 	V.element = vertex;
 	V.Adj = new Array();
+	V.distance = 1000000000000000;
+	V.visited = false;
+	V._parent = null;
 
 	Graph.Vertices.push(V);
 }
@@ -46,7 +51,6 @@ function _add_edge(origin,endpoint,line,weight){
 	edge = new Object();	
 	edge.origin = origin;		
 	edge.endpoint = endpoint;
-	edge.weight = weight;
 	edge.weight = weight;
 	edge.line = line;
 
@@ -138,11 +142,29 @@ function _show_vertices(){		//Display all the vertices of the graph
 	alert(s);
 }
 
+function _weight(origin,endpoint){
+	s = origin.element.id;
+	d = endpoint.element.id;
+
+	var i;
+	for(i=0; i < Graph.Edges.length; i++)
+	{
+		if(Graph.Edges[i].origin.id == s && Graph.Edges[i].endpoint.id == d){
+			return Graph.Edges[i].weight;
+		}
+
+		if(Graph.Edges[i].endpoint.id == s && Graph.Edges[i].origin.id == d){
+			return Graph.Edges[i].weight;
+		}
+	}
+}
+
 
 Graph.add_vertex = _add_vertex;
 Graph.add_edge = _add_edge;
 Graph.show_vertices = _show_vertices;
 Graph.show_edges = _show_edges;
+Graph.weight = _weight;
 
 //-----------------------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------The HTML Interface------------------------------------------------------------
@@ -256,4 +278,205 @@ function createLine(start_div, end_div, x1, y1, x2, y2){
 	
 	document.getElementById("canvas").appendChild(line);
 	Graph.add_edge(start_div,end_div,line,weight);
+}
+
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------Implementing Dijkstra's Algorithm------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------
+
+//----------------------Queue for Dijkstra--------------------
+//------------------------------------------------------------
+function _insert(vertex){
+	this._data.push(vertex);
+	this._size = this._size + 1;
+}
+
+function _extract_min(){
+	var i;
+	var min = 0;
+	//alert("About to begin iterations")
+	for(i=0; i < this._data.length; i++)
+	{
+		if(parseInt(this._data[i].distance) < parseInt(this._data[min].distance))
+		{
+				min = i;
+		}	
+	}
+
+	var last = this._data.length - 1;
+
+	var temp = this._data[last];
+	this._data[last] = this._data[min];
+	this._data[min] = temp;
+	this._size = this._size - 1;
+
+	var deleted = this._data[last];
+	this._data.pop()
+
+	return deleted;
+}
+
+function _is_empty(){
+	return this._size == 0;
+}
+
+var PriorityQueue = new Object();
+PriorityQueue._data = new Array();
+PriorityQueue._size = 0;
+
+PriorityQueue.is_empty = _is_empty;
+PriorityQueue.insert = _insert;
+PriorityQueue.extract_min = _extract_min;
+
+
+function Dijkstra(){
+	if(validate_inputs()){
+
+		var s = get_vertex(document.getElementById("source").value);
+		var d = get_vertex(document.getElementById("destination").value);
+		var Path = new Array();
+
+		s.distance = 0;
+		PriorityQueue.insert(s);
+
+		while(not_in_arr(Path,d))
+		{
+			var u = PriorityQueue.extract_min();
+			u.visited = true;
+
+			Path.push(u);
+
+			var j;
+			for(j=0; j < u.Adj.length; j++)
+			{
+				var v = u.Adj[j];
+				if(v.visited == false)
+				{
+					relax(u,v);
+					PriorityQueue.insert(v);
+				}
+			}
+		}
+
+		var curr = d;
+		var next = d._parent;
+		var dc = 0;
+
+		while(s.element.style.backgroundColor == "white")
+		{
+			dc = dc + 1;
+
+			//curr.element.style.transitionDelay = dc + "s";
+			curr.element.style.backgroundColor = "red";
+
+			//dc = dc + 1;
+
+			color_edge(curr,next,0);
+
+			curr = curr._parent;
+			next = curr._parent;
+
+		}		
+	}
+}
+
+
+function relax(origin,endpoint){
+	ud = parseInt(origin.distance);
+	vd = parseInt(endpoint.distance);
+	w = parseInt(Graph.weight(origin,endpoint));
+	if(vd > (ud + w)){
+		endpoint.distance = ud + w;
+		endpoint._parent = origin;
+	}
+}
+
+
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------Other Functions------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+function color_edge(source,endpoint,count){
+	var i;
+//	alert("Source : " + source.element.id + " Destination : " + endpoint.element.id);
+	for(i=0; i < Graph.Edges.length; i++)
+	{
+		if((Graph.Edges[i].origin.id == source.element.id && Graph.Edges[i].endpoint.id == endpoint.element.id) || (Graph.Edges[i].origin.id == endpoint.element.id && Graph.Edges[i].endpoint.id == source.element.id))
+		{
+			Graph.Edges[i].line.style.transitionDelay = count + "s";
+			Graph.Edges[i].line.style.backgroundColor = "white";
+
+		}
+	}
+}
+
+
+function not_in_arr(arr,v)
+{
+	var i;
+	for(i=0; i < arr.length; i++)
+	{
+		if(v.element.id == arr[i].element.id){
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+function get_vertex(name){
+	var i;
+	for(i=0; i < Graph.Vertices.length; i++)
+	{
+		if(Graph.Vertices[i].element.id == name){
+			return Graph.Vertices[i];
+		}
+	}
+}
+
+function validate_inputs(){
+	if(document.getElementById("source").value == ""){
+		alert("Please enter a source vertex");
+	}
+
+	else if(document.getElementById("destination").value == ""){
+		alert("Plese enter a destination vertex");
+	}
+
+	else{
+		return true	
+	}
+}
+
+function Restart(){
+	var i;
+
+	for(i=0; i<Graph.Vertices.length; i++)
+	{
+		Graph.Vertices[i].distance = 1000000000000;
+		Graph.Vertices[i].element.style.transitionDelay = "0s";
+		Graph.Vertices[i].element.style.backgroundColor = "white";
+	}
+
+	for(i=0; i<Graph.Edges.length; i++)
+	{
+		Graph.Edges[i].line.style.transitionDelay = "0s";
+		Graph.Edges[i].line.style.backgroundColor = "black";
+	}
+
+	while(! PriorityQueue.is_empty())
+	{
+		PriorityQueue.extract_min();
+	}
+}
+
+function CleanCanvas(){
+	location.reload();
 }

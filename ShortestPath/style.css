@@ -11,9 +11,9 @@
 
 .line{
   transform-origin: 0 100%;
-  height: 3px; /* Line width of 3 */
+  height: 4px; /* Line width of 3 */
   /*border: 0.2px solid black;*/
-  background: black; /* Black fill */
+  background: 2px black; /* Black fill */
   z-index: 1;
   transition-property: background-color;
   transition-duration: 1s;
@@ -27,6 +27,13 @@
 }
 
 #source{
+	float:right;
+	text-align:center;
+	width:100px;
+}
+
+#destination{
+	float:right;
 	text-align:center;
 	width:100px;
 }
