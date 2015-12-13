@@ -48,12 +48,18 @@ function _add_edge(origin,endpoint,line){
 	Graph.Edges.push(edge);
 
 	s = get_graph_vertex(origin);
-	d = get_graph_vertex(endpoint);
+	d = get_graph_vertex(endpoint);	
 
 	if (check_duplicates_in_Adj(s,d))	//Checking if the edge already exists, multiple edges are disallowed
 	{
-		s.Adj.push(d);
-		d.Adj.push(s);
+		if(document.getElementById("Directed").checked){
+			s.Adj.push(d);
+		}
+
+		else if(document.getElementById("Undirected").checked){
+			s.Adj.push(d);
+			d.Adj.push(s);
+		}
 	}
 
 	else
@@ -230,15 +236,24 @@ function createLine(start_div, end_div, x1, y1, x2, y2){
 
 	var line = document.createElement("div");	//creating the div that contains the line
 
-	line.className = "line";					//class = line has css predefined css stylings in style.css
+	if(document.getElementById("Directed").checked){
+		line.className = "directedLine";					//class = line has css predefined css stylings in style.css
+	}
+
+	else{
+		line.className = "undirectedLine";
+	}
+	
 	line.id = "edge_" + start_div.id + "_" + end_div.id;		//id has the syntax edge_origin-vertex-id_destination-vertex-id
 	
 	//stylings of the line
 	line.style.position = "absolute";
+	line.style.textDecoration = "underline";
 	line.style.transform = transform;
 	line.style.width = length;
 	line.style.marginLeft = x1;
 	line.style.marginTop = y1;
+
 	
 	document.getElementById("canvas").appendChild(line);
 
@@ -253,24 +268,12 @@ DFS_counter = 0;
 function DFS(){
 
 	s = get_source_vertex(document.getElementById("source").value);
-	DFS_Visit(s);
+	s.element.style.backgroundColor = "#1aff8d";
 
-	var i;
-	for(i=0; i < Graph.Vertices.length; i++)
-	{
-		v = Graph.Vertices[i];
-		if(v.element.style.backgroundColor == "white")
-		{
-			DFS_Visit(v);
-		}
-	}
+	DFS_Visit(s);
 }
 
 function DFS_Visit(u){
-
-	DFS_counter = DFS_counter + 2;
-	u.element.style.transitionDelay = DFS_counter + "s";
-	u.element.style.backgroundColor = "#1aff8d";
 
 	var j;
 	for(j=0; j < u.Adj.length; j++)
@@ -278,8 +281,12 @@ function DFS_Visit(u){
 		v = u.Adj[j];
 		if (v.element.style.backgroundColor == "white")
 		{
-			DFS_counter = DFS_counter + 2;
+			DFS_counter = DFS_counter + 1;
 			color_edge(u,v,DFS_counter);		//To color the edge just discovered
+			
+			v.element.style.transitionDelay = DFS_counter + "s";
+			v.element.style.backgroundColor = "#1aff8d";
+
 			DFS_Visit(v);
 		}
 	}
@@ -328,16 +335,13 @@ function BFS(){
 	var s;
 
 	s = get_source_vertex(document.getElementById("source").value)
-	
+	s.element.style.backgroundColor = "#1aff8d";
+
 	Queue.enqueue(s);
 
 	while(!Queue.is_empty())
 	{
 		u = Queue.dequeue();
-
-		BFS_counter = BFS_counter + 2;
-		u.element.style.transitionDelay = BFS_counter + "s";
-		u.element.style.backgroundColor = "#1aff8d";
 
 		var j;
 		for(j=0; j < u.Adj.length; j++)
@@ -345,9 +349,12 @@ function BFS(){
 			v = u.Adj[j];
 			if(v.element.style.backgroundColor == "white")
 			{
-				BFS_counter = BFS_counter + 2;
+				BFS_counter = BFS_counter + 1;
 				Queue.enqueue(v);
 				color_edge(u,v,BFS_counter);	//To color the edge just discovered
+
+				v.element.style.transitionDelay = BFS_counter + "s";
+				v.element.style.backgroundColor = "#1aff8d";
 			}
 		}
 
@@ -368,6 +375,7 @@ function color_edge(source,endpoint,count)
 		{
 			Graph.Edges[i].line.style.transitionDelay = count + "s";
 			Graph.Edges[i].line.style.backgroundColor = "white";
+			Graph.Edges[i].line.style.color = "white";
 
 		}
 	}
@@ -401,6 +409,7 @@ function Restart(){
 	{
 		Graph.Edges[i].line.style.transitionDelay = "0s";
 		Graph.Edges[i].line.style.backgroundColor = "black";
+		Graph.Edges[i].line.style.color = "black";
 	}
 }
 

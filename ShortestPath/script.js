@@ -22,6 +22,7 @@ function _add_vertex(vertex){
 		Adj : an array of all the vertices that are adjacent to the current vertex (Adjacency List)
 		distance : a number that tells it's distance from the source vertex
 		_parent : a pointer that points to it's predecessor in the shortest path
+		visited : a boolean value that tells the program wheather the vertex has been visited or not in the traversal
 
 	The Vertex object is then pushed into array "Graph.Vertices"
 	The Array "Graph.Vertices" is the required Adjacency List representation of the graph
@@ -32,6 +33,7 @@ function _add_vertex(vertex){
 	V.distance = 1000000000000000;
 	V.visited = false;
 	V._parent = null;
+	V.NEXTS = new Array();
 
 	Graph.Vertices.push(V);
 }
@@ -61,8 +63,14 @@ function _add_edge(origin,endpoint,line,weight){
 
 	if (check_duplicates_in_Adj(s,d))	//Checking if the edge already exists, multiple edges are disallowed
 	{
-		s.Adj.push(d);
-		d.Adj.push(s);
+		if(document.getElementById("Directed").checked){
+			s.Adj.push(d);
+		}
+
+		else{
+			s.Adj.push(d);
+			d.Adj.push(s);
+		}
 	}
 
 	else
@@ -264,7 +272,14 @@ function createLine(start_div, end_div, x1, y1, x2, y2){
 	
 	s = "<span style=\"font-size:20px;position:absolute;margin-top:10px;font-weight:bold;\">" + weight +"</span>";	//adding styles for the edge weight which has toappear in the div "line"
 
-	line.className = "line";					//class = line has css predefined css stylings in style.css
+	if(document.getElementById("Directed").checked){
+		line.className = "directedLine";					//class = line has css predefined css stylings in style.css
+	}
+
+	else{
+		line.className = "undirectedLine";
+	}
+
 	line.id = "edge_" + start_div.id + "_" + end_div.id;		//id has the syntax edge_origin-vertex-id_destination-vertex-id
 	
 	//stylings of the line
@@ -286,7 +301,7 @@ function createLine(start_div, end_div, x1, y1, x2, y2){
 //--------------------------------------Implementing Dijkstra's Algorithm------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------------------------------
 
-//----------------------Queue for Dijkstra--------------------
+//---------------Priority Queue For Dijkstra-----------------
 //------------------------------------------------------------
 function _insert(vertex){
 	this._data.push(vertex);
@@ -332,21 +347,26 @@ PriorityQueue.extract_min = _extract_min;
 
 
 function Dijkstra(){
-	if(validate_inputs()){
+	if(validate_inputs() == "Source"){
 
 		var s = get_vertex(document.getElementById("source").value);
-		var d = get_vertex(document.getElementById("destination").value);
 		var Path = new Array();
 
 		s.distance = 0;
+
+		var i;
+
 		PriorityQueue.insert(s);
 
-		while(not_in_arr(Path,d))
+		while(! PriorityQueue.is_empty())
 		{
 			var u = PriorityQueue.extract_min();
 			u.visited = true;
 
-			Path.push(u);
+			if(not_in_arr(Path,u))
+			{
+				Path.push(u);
+			}
 
 			var j;
 			for(j=0; j < u.Adj.length; j++)
@@ -358,27 +378,181 @@ function Dijkstra(){
 					PriorityQueue.insert(v);
 				}
 			}
-		}
+		}	
+		reverse_pointers(s,null,1);
+		color_graph(s,null,1);
+	}
 
-		var curr = d;
-		var next = d._parent;
-		var dc = 0;
+	if(validate_inputs() == "SourceDestination"){
 
-		while(s.element.style.backgroundColor == "white")
+		var s = get_vertex(document.getElementById("source").value);
+		var d = get_vertex(document.getElementById("destination").value);
+
+		var Path = new Array();
+
+		s.distance = 0;
+
+		var i;
+
+		PriorityQueue.insert(s);
+
+		while(! PriorityQueue.is_empty())
 		{
-			dc = dc + 1;
+			var u = PriorityQueue.extract_min();
+			u.visited = true;
 
-			//curr.element.style.transitionDelay = dc + "s";
-			curr.element.style.backgroundColor = "red";
+			if(not_in_arr(Path,u))
+			{
+				Path.push(u);
+			}
 
-			//dc = dc + 1;
+			var j;
+			for(j=0; j < u.Adj.length; j++)
+			{
+				var v = u.Adj[j];
+				if(v.visited == false)
+				{
+					relax(u,v);
+					PriorityQueue.insert(v);
+				}
+			}
+		}	
+		reverse_pointers(s,d,2);
+		color_graph(s,d,2);
+	}
+}
 
-			color_edge(curr,next,0);
+//-----------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------
 
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------Other Functions------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------
+
+function reverse_pointers(src,destination,key){
+
+	if(key == 1){
+		var i;
+		var j;
+
+		for(i=0; i < Graph.Vertices.length; i++)
+		{
+			if(Graph.Vertices[i] != src){
+				Graph.Vertices[i]._parent.NEXTS.push(Graph.Vertices[i]);
+			}
+		}
+	}
+
+	else if(key == 2){
+		var i;
+		var j;
+
+		var curr = destination;
+		while(curr != src)
+		{
+			curr._parent.NEXTS.push(curr);
 			curr = curr._parent;
-			next = curr._parent;
+		}
+	}
+}
 
-		}		
+//----------Queue For Breadth First Traversal Of Next Pointers----------------
+//----------------------------------------------------------------------------
+
+var Queue = new Object();
+Queue._data= new Array();
+Queue.front = 0;
+Queue.rear = 0;
+	
+function _enqueue(vertex){
+	this._data.push(vertex);
+	this.rear = this.rear + 1;
+}
+
+function _dequeue(){
+	dequeued = this._data[this.front];
+	this._data[this.front] = null;
+	this.front = this.front + 1;
+	return dequeued;
+}
+
+function Queue_is_empty(){
+	return this.front == this.rear;
+}
+
+
+Queue.enqueue = _enqueue;
+Queue.dequeue = _dequeue;
+Queue.is_empty = Queue_is_empty;
+Queue.disp = _disp;
+
+function color_graph(source,destination,key){
+
+	if(key == 1){
+
+		var counter = 0;
+
+		source.element.style.backgroundColor = "#1aff8d";
+		Queue.enqueue(source);
+
+		while(!Queue.is_empty())
+		{
+			u = Queue.dequeue();
+
+			var j;
+			for(j=0; j < u.NEXTS.length; j++)
+			{
+				v = u.NEXTS[j];
+
+				if(v.element.style.backgroundColor == "white")
+				{
+					counter = counter + 1.5;
+					Queue.enqueue(v);
+					color_edge(u,v,counter);
+
+
+					v.element.style.transitionDelay = counter + "s";
+					v.element.style.backgroundColor = "#1aff8d";
+				}
+			}
+		}
+	}
+
+	if(key == 2){
+
+		var counter = 0;
+
+		source.element.style.backgroundColor = "#1aff8d";
+		Queue.enqueue(source);
+
+		while(!Queue.is_empty())
+		{
+			u = Queue.dequeue();
+
+			var j;
+			for(j=0; j < u.NEXTS.length; j++)
+			{
+				v = u.NEXTS[j];
+
+				if(v.element.style.backgroundColor == "white")
+				{
+					counter = counter + 1.5;
+					Queue.enqueue(v);
+					color_edge(u,v,counter);
+
+
+					v.element.style.transitionDelay = counter + "s";
+					v.element.style.backgroundColor = "#1aff8d";
+				}
+			}
+
+			if(u == destination){
+				break;
+			}
+		}
 	}
 }
 
@@ -390,28 +564,19 @@ function relax(origin,endpoint){
 	if(vd > (ud + w)){
 		endpoint.distance = ud + w;
 		endpoint._parent = origin;
-	}
+	}	
 }
-
-
-
-
-//-----------------------------------------------------------------------------------------------------------------------------------
-//--------------------------------------Other Functions------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------------------------------
-
 
 
 function color_edge(source,endpoint,count){
 	var i;
-//	alert("Source : " + source.element.id + " Destination : " + endpoint.element.id);
 	for(i=0; i < Graph.Edges.length; i++)
 	{
 		if((Graph.Edges[i].origin.id == source.element.id && Graph.Edges[i].endpoint.id == endpoint.element.id) || (Graph.Edges[i].origin.id == endpoint.element.id && Graph.Edges[i].endpoint.id == source.element.id))
 		{
 			Graph.Edges[i].line.style.transitionDelay = count + "s";
 			Graph.Edges[i].line.style.backgroundColor = "white";
-
+			Graph.Edges[i].line.style.color = "white";
 		}
 	}
 }
@@ -447,11 +612,11 @@ function validate_inputs(){
 	}
 
 	else if(document.getElementById("destination").value == ""){
-		alert("Plese enter a destination vertex");
+		return "Source";
 	}
 
 	else{
-		return true	
+		return "SourceDestination";	
 	}
 }
 
@@ -463,12 +628,19 @@ function Restart(){
 		Graph.Vertices[i].distance = 1000000000000;
 		Graph.Vertices[i].element.style.transitionDelay = "0s";
 		Graph.Vertices[i].element.style.backgroundColor = "white";
+		Graph.Vertices[i].visited = false;
+		Graph.Vertices[i]._parent = null;
+
+		while(Graph.Vertices[i].NEXTS.length != 0){
+			Graph.Vertices[i].NEXTS.pop();
+		}
 	}
 
 	for(i=0; i<Graph.Edges.length; i++)
 	{
 		Graph.Edges[i].line.style.transitionDelay = "0s";
 		Graph.Edges[i].line.style.backgroundColor = "black";
+		Graph.Edges[i].line.style.color = "black";
 	}
 
 	while(! PriorityQueue.is_empty())
