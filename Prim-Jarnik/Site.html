@@ -1,0 +1,29 @@
+<html>
+<head>
+<title>Hello</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+<script src="script.js">
+</script>
+</head>
+<body ondragstart="return false;" ondrop="return false;">
+	<h1>Visualising Prim's Algorithm</h1>
+	<div id="canvas">
+	</div>
+
+	<div id="buttons">
+		<div class="btn">
+		<label>Source : </label><input type="textbox" id="source" value=""></input><br>
+		</div>
+		<div class="btn">
+		<div class="btn">
+		<button type="button" onclick="Prim_Jarnik()">Prim-Jarnik</button><br>
+		</div>
+		<div class="btn">
+		<button type="button" onclick="Restart()">Refresh Graph</button><br>
+		</div>
+		<div class="btn">
+		<button type="btn" onclick="CleanCanvas()">Clean Up</button><br>
+		</div>
+	</div>
+</body>
+</html>

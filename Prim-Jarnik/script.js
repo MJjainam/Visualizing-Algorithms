@@ -30,8 +30,10 @@ function _add_vertex(vertex){
 	var V = new Object();	
 	V.element = vertex;
 	V.Adj = new Array();
+	V.distance = 1000000000000000;
 	V.visited = false;
-	V.discovered = false;
+	V._parent = null;
+	V.NEXTS = new Array();
 
 	Graph.Vertices.push(V);
 }
@@ -263,11 +265,11 @@ function createLine(start_div, end_div, x1, y1, x2, y2){
 	//var weight_text = document.createTextNode(weight);
 	
 	s = "<span style=\"font-size:20px;position:absolute;margin-top:10px;font-weight:bold;\">" + weight +"</span>";	//adding styles for the edge weight which has toappear in the div "line"
-				//class = line has css predefined css stylings in style.css
 
+	line.className = "line";
 
 	line.id = "edge_" + start_div.id + "_" + end_div.id;		//id has the syntax edge_origin-vertex-id_destination-vertex-id
-	line.className = "line";
+	
 	//stylings of the line
 	line.style.position = "absolute";
 	line.style.transform = transform;
@@ -284,22 +286,23 @@ function createLine(start_div, end_div, x1, y1, x2, y2){
 
 
 //-----------------------------------------------------------------------------------------------------------------------------------
-//--------------------------------------Implementing Kruskal's Algorithm-------------------------------------------------------------
+//--------------------------------------Implementing Dijkstra's Algorithm------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------------------------------
 
-//---------------Priority Queue For Edges----------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
-function _insert(edge){
-	this._data.push(edge);
+//---------------Priority Queue For Dijkstra-----------------
+//------------------------------------------------------------
+function _insert(vertex){
+	this._data.push(vertex);
 	this._size = this._size + 1;
 }
 
 function _extract_min(){
 	var i;
 	var min = 0;
+	//alert("About to begin iterations")
 	for(i=0; i < this._data.length; i++)
 	{
-		if(parseInt(this._data[i].weight) < parseInt(this._data[min].weight))
+		if(parseInt(this._data[i].distance) < parseInt(this._data[min].distance))
 		{
 				min = i;
 		}	
@@ -322,16 +325,6 @@ function _is_empty(){
 	return this._size == 0;
 }
 
-/*function _display(){
-	var s = "";
-	while(! this.is_empty())
-	{
-		var n = this.extract_min();
-		s = s + n.weight + "--";
-	}
-	alert(s);
-}*/
-
 var PriorityQueue = new Object();
 PriorityQueue._data = new Array();
 PriorityQueue._size = 0;
@@ -339,248 +332,42 @@ PriorityQueue._size = 0;
 PriorityQueue.is_empty = _is_empty;
 PriorityQueue.insert = _insert;
 PriorityQueue.extract_min = _extract_min;
-//PriorityQueue.disp = _display;
 
 
-function show_arr(arr){
-	var i;
-	var s = " ";
-	//alert("this was a success");
-	for(i=0; i < arr.length; i++)
-	{
-	//	alert("I'm in here");
-		s = s + arr[i]._name + ", ";
-	}
+function Prim_Jarnik(){
+	
+	var s = get_vertex(document.getElementById("source").value);
+	var MST = new Array();
 
-	//alert("Came out");
-
-	alert(s);
-}
-//--------------------------------------MST So Far---------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------------
-var MST = new Object();
-MST.Vertices = new Array();
-MST.edge_count = 0;
-
-function MST_add_vertex(n){
-  var MSTVertex = new Object();
-  MSTVertex._name = n;
-  MSTVertex.Adj = new Array();
-  MSTVertex.visited = false;
-  MST.Vertices.push(MSTVertex);
-//  alert("Vertex Added : " + n);
-  return MSTVertex;
-}
-
-function MST_add_edge(origin,endpoint){
-  if(MST_check_duplicates(origin,endpoint)){
-
-//  		alert("Before Adding Edge (" + origin._name + ", " + endpoint._name + ") Showing Adj of " + origin._name);
- // 		show_arr(origin.Adj);
-//  		alert("Before Adding Edge (" + origin._name + ", " + endpoint._name + ") Showing Adj of " + endpoint._name);
-//  		show_arr(endpoint.Adj);
-
-    	origin.Adj.push(endpoint);
-    	endpoint.Adj.push(origin);
-
-//  		alert("After Adding Edge (" + origin._name + ", " + endpoint._name + ") Showing Adj of " + origin._name);
- // 		show_arr(origin.Adj);
-//  		alert("After Adding Edge (" + origin._name + ", " + endpoint._name + ") Showing Adj of " + endpoint._name);
-//  		show_arr(endpoint.Adj);
-
-    	this.edge_count = this.edge_count + 1;
- //   	alert("Edge added : (" + origin._name + ", " + endpoint._name + ")");
-  }
-}
-
-function MST_check_duplicates(u,v){
-  var i,j;
-  for(i=0; i < MST.Vertices.length; i++)
-  {
-    if(MST.Vertices[i] == u){
-      for(j=0; j < MST.Vertices.length; j++)
-      {
-        if(MST.Vertices[i].Adj[j] == v){
-          return false;
-        }
-      }
-    }
-  } 
-  return true;
-}
-
-function MST_get_vertex(n){
-	var i;
-	for(i=0; i < MST.Vertices.length; i++)
-	{
-		if(MST.Vertices[i]._name == n){
-			return MST.Vertices[i];
-		}
-	}
-}
-
-MST.add_vertex = MST_add_vertex;
-MST.add_edge = MST_add_edge;
-MST.get_vertex = MST_get_vertex;
-
-
-//------------------------------------------Creates Cycle Method---------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------------
-function creates_cycle(edge){
-
-	var s = edge.origin.id;
-	var d = edge.endpoint.id;
-
-//	alert("Checking for edge : (" + s + ", " + d);
-
-	var ufound = false;
-	var vfound = false;
+	s.distance = 0;
 
 	var i;
-	var j;
 
-	for(i=0; i < MST.Vertices.length; i++)
+	for(i=0; i < Graph.Vertices.length; i++)
 	{
-		if(MST.Vertices[i]._name == s){
-			ufound = true;
-			break;
-		}
+		PriorityQueue.insert(Graph.Vertices[i]);
 	}
 
-	for(i=0; i < MST.Vertices.length; i++)
+	while(! PriorityQueue.is_empty())
 	{
-		if(MST.Vertices[i]._name == d){
-			vfound = true;
-			break; 
-		}
-	}
+		var u = PriorityQueue.extract_min();
 
-
-	if(ufound == true && vfound == true){
-//		alert("Both are in the tree");
-		var u = MST_get_vertex(s);
-		var v = MST_get_vertex(d);
-		var result = MST_DFS(u,v);
-		if(result == false){
-			MST_add_edge(u,v);
-		}
-
-		return result;
-	}
-
-	else if(ufound == false && vfound == false){
-		//None of them are present
-//		alert("None of them are in the tree");
-		var u = MST.add_vertex(s);
-		var v = MST.add_vertex(d);
-		MST.add_edge(u,v);
-		return false;
-	}
-
-	else if(ufound == true && vfound == false){
-			//v is not present
-//			alert(s + " is alredy in the tree and " + d + " is not");
-			var u = MST.get_vertex(s);
-			var v = MST.add_vertex(d);
-			MST.add_edge(u,v);
-			return false;
-		}
-
-	else if(ufound == false && vfound == true){
-			//u is not present
-//			alert(d + " is already in the tree and " + s + " is not");
-			var u = MST.add_vertex(s);
-			var v = MST.get_vertex(d);
-			MST.add_edge(u,v);
-			return false;
-		}
-
-	return true;
-}
-
-function MST_DFS(u,d){
-
-//	alert("DFS traversal of " + u._name);
-	u.visited = true;
-
-	for(i=0; i < MST.Vertices.length; i++)
-	{
-		MST.Vertices[i].visited = false;
-	}
-
-	MST_DFS_Visit(u);
-
-	if(d.visited == true){
-//		alert("Reached " + d._name + " in the traversal");
-		return true;
-	}
-
-//	alert("Could not reach " + d._name);
-
-	return false;
-}
-
-function MST_DFS_Visit(u){
-
-//	alert("At vertex : " + u._name);
-
-	var j;
-
-	for(j=0; j < u.Adj.length; j++)
-	{
-		v = u.Adj[j];
-//		alert("Checking if " + v._name + " is visited");
-		if (v.visited == false)
+		if(not_in_arr(MST,u))
 		{
-			v.visited = true;
-			MST_DFS_Visit(v);
-		}
-	}
-
-//	alert("Done with " + u._name);
-}
-
-function show_me_the_vertices(){
-  var i;
-  for(i=0; i < MST.Vertices.length; i++)
-  {
-    alert(MST.Vertices[i]._name);
-  }
-}
-
-//--------------------------------------------Kruskal's Algorithm--------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------------
-
-function Kruskal(){
-	var i;
-	var count = 0;
-	for(i=0; i < Graph.Edges.length; i++)
-	{
-		PriorityQueue.insert(Graph.Edges[i]);
-	}
-
-/*	for(i=0; i < Graph.Vertices.length; i++)
-	{
-		var e = PriorityQueue.extract_min();
-		if(! creates_cycle(e)){
-			color_edge(e,count);
-			count = count + 1;
-		}
-	}*/
-
-	while(MST.edge_count != Graph.Vertices.length - 1)
-	{
-		var e = PriorityQueue.extract_min();
-		if(! creates_cycle(e)){
-			color_edge(e, count, "#8cff66");
+			MST.push(u);
 		}
 
-		else{
-			color_edge(e, count, "#ff9933");
+		var j;
+		for(j=0; j < u.Adj.length; j++)
+		{
+			var v = u.Adj[j];
+			if(not_in_arr(MST,v)){
+				relax(u,v);
+			}
 		}
-		count = count + 1;
-
-	}
+	}	
+	reverse_pointers(s);
+	color_graph(s);
 }
 
 //-----------------------------------------------------------------------------------------------------------------------------------
@@ -592,11 +379,116 @@ function Kruskal(){
 //-----------------------------------------------------------------------------------------------------------------------------------
 //--------------------------------------Other Functions------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------------------------------
-function color_edge(edge,count,color){
-	var edge_line = edge.line;
-	edge_line.style.transitionDelay = count + "s";
-	edge_line.style.backgroundColor = color;
-	edge_line.color = "white";
+
+function reverse_pointers(src){
+
+	var i;
+	var j;
+
+	for(i=0; i < Graph.Vertices.length; i++)
+	{
+		if(Graph.Vertices[i] != src){
+			Graph.Vertices[i]._parent.NEXTS.push(Graph.Vertices[i]);
+		}
+	}
+
+}
+
+//----------Queue For Breadth First Traversal Of Next Pointers----------------
+//----------------------------------------------------------------------------
+
+var Queue = new Object();
+Queue._data= new Array();
+Queue.front = 0;
+Queue.rear = 0;
+	
+function _enqueue(vertex){
+	this._data.push(vertex);
+	this.rear = this.rear + 1;
+}
+
+function _dequeue(){
+	dequeued = this._data[this.front];
+	this._data[this.front] = null;
+	this.front = this.front + 1;
+	return dequeued;
+}
+
+function Queue_is_empty(){
+	return this.front == this.rear;
+}
+
+
+Queue.enqueue = _enqueue;
+Queue.dequeue = _dequeue;
+Queue.is_empty = Queue_is_empty;
+Queue.disp = _disp;
+
+function color_graph(source){
+
+	var counter = 0;
+
+	source.element.style.backgroundColor = "#1aff8d";
+	Queue.enqueue(source);
+
+	while(!Queue.is_empty())
+	{
+		u = Queue.dequeue();
+		var j;
+		for(j=0; j < u.NEXTS.length; j++)
+		{
+			v = u.NEXTS[j];
+			if(v.element.style.backgroundColor == "white")
+			{
+				counter = counter + 1.5;
+				Queue.enqueue(v);
+				color_edge(u,v,counter,"white");
+
+				v.element.style.transitionDelay = counter + "s";
+				v.element.style.backgroundColor = "#1aff8d";
+			}
+		}
+	}
+}
+
+
+function relax(origin,endpoint){
+	ud = parseInt(origin.distance);
+	vd = parseInt(endpoint.distance);
+	w = parseInt(Graph.weight(origin,endpoint));
+
+	if(vd > w){
+		endpoint.distance = w;
+		endpoint._parent = origin;
+	}
+}
+
+
+function color_edge(source,endpoint,count,color){
+	var i;
+	for(i=0; i < Graph.Edges.length; i++)
+	{
+		if((Graph.Edges[i].origin.id == source.element.id && Graph.Edges[i].endpoint.id == endpoint.element.id) || (Graph.Edges[i].origin.id == endpoint.element.id && Graph.Edges[i].endpoint.id == source.element.id))
+		{
+			Graph.Edges[i].line.style.transitionDelay = count + "s";
+			Graph.Edges[i].line.style.backgroundColor = color;
+			Graph.Edges[i].line.style.color = color;
+		}
+	}
+}
+
+
+function not_in_arr(arr,v)
+{
+	var i;
+	for(i=0; i < arr.length; i++)
+	{
+		if(v.element.id == arr[i].element.id){
+			return false;
+		}
+	}
+
+	return true;
 }
 
 
@@ -610,14 +502,34 @@ function get_vertex(name){
 	}
 }
 
+function validate_inputs(){
+	if(document.getElementById("source").value == ""){
+		alert("Please enter a source vertex");
+	}
+
+	else if(document.getElementById("destination").value == ""){
+		return "Source";
+	}
+
+	else{
+		return "SourceDestination";	
+	}
+}
 
 function Restart(){
 	var i;
 
 	for(i=0; i<Graph.Vertices.length; i++)
 	{
+		Graph.Vertices[i].distance = 1000000000000;
 		Graph.Vertices[i].element.style.transitionDelay = "0s";
 		Graph.Vertices[i].element.style.backgroundColor = "white";
+		Graph.Vertices[i].visited = false;
+		Graph.Vertices[i]._parent = null;
+
+		while(Graph.Vertices[i].NEXTS.length != 0){
+			Graph.Vertices[i].NEXTS.pop();
+		}
 	}
 
 	for(i=0; i<Graph.Edges.length; i++)
@@ -625,11 +537,6 @@ function Restart(){
 		Graph.Edges[i].line.style.transitionDelay = "0s";
 		Graph.Edges[i].line.style.backgroundColor = "black";
 		Graph.Edges[i].line.style.color = "black";
-	}
-
-	while(MST.Vertices.length != 0)
-	{
-		MST.Vertices.pop();
 	}
 
 	while(! PriorityQueue.is_empty())
