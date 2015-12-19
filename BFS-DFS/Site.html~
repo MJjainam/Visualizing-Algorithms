@@ -6,7 +6,7 @@
 </script>
 </head>
 <body ondragstart="return false;" ondrop="return false;">
-	<h1>Visualising Graph Traversal Algorithms</h1>
+	<h1>Visualizing Graph Traversal Algorithms</h1>
 	<div id="canvas">
 	</div>
 

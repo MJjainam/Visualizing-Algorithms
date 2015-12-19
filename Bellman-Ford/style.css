@@ -1,0 +1,76 @@
+#canvas{
+	padding:10px;
+	z-index:0;
+	position:absolute;
+	float:top;
+	width:73%;
+	height:500px;
+	background-color:#a3a3c2;
+	border : 3px solid black;
+}
+
+.undirectedLine{
+  transform-origin: 0 100%;
+  height: 5px; /* Line width of 3 */
+  /*border: 0.2px solid black;*/
+  background: black; /* Black fill */
+  z-index: 1;
+  transition-property: background-color, color;
+  transition-duration: 1s;
+}
+
+
+.directedLine{
+  transform-origin: 0 100%;
+  height: 5px; /* Line width of 3 */
+  /*border: 0.2px solid black;*/
+  background: black; /* Black fill */
+  z-index: 1;
+  transition-property: background-color, color;
+  transition-duration: 1s;
+}
+
+.directedLine:after {
+  content : ">";
+  font-size:220%;
+  position: absolute;
+  right: 13px;
+  top: -20px;
+  text-align:center;
+}
+
+#buttons{
+	text-align:center;
+	position:relative;
+	float:right;
+	width:23%;
+}
+
+#source{
+	float:right;
+	text-align:center;
+	width:100px;
+}
+
+#destination{
+	float:right;
+	text-align:center;
+	width:100px;
+}
+
+button{
+	background-color:black;
+	border-radius:30px;
+	border-color:black;
+	width:150px;
+	padding:5px;
+	color:white;
+}
+
+button :hover{
+	background-color:green;
+}
+
+.btn{
+	padding:30px;
+}

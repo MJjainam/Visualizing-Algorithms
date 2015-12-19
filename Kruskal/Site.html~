@@ -6,7 +6,7 @@
 </script>
 </head>
 <body ondragstart="return false;" ondrop="return false;">
-	<h1>Kruskal's Algorithm</h1>
+	<h1>Kruskal's Algorithms</h1>
 	<div id="canvas">
 	</div>
 

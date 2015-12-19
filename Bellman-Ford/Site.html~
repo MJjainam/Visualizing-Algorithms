@@ -6,13 +6,16 @@
 </script>
 </head>
 <body ondragstart="return false;" ondrop="return false;">
-	<h1>Graph Traversal Algorithms</h1>
+	<h1>Bellman-Ford's Algorithm</h1>
 	<div id="canvas">
 	</div>
 
 	<div id="buttons">
 		<div class="btn">
-		<label>Source Vertex : </label><input type="textbox" id="source" value=""></input><br>
+		<label>Source : </label><input type="textbox" id="source" value=""></input><br>
+		</div>
+		<div class="btn">
+		<label>Destination : </label><input type="textbox" id="destination" value=""></input><br>
 		</div>
 
 		<input type="radio" id="Directed" name="Type" value="Directed"/>
@@ -21,17 +24,11 @@
 		<label>Undirected</label>
 
 		<div class="btn">
-		<button type="button" onclick="DFS()">DFS</button><br>
+		<button type="button" onclick="Bellman_Ford()">Bellman-Ford</button><br>
 		</div>
-
-		<div class="btn">
-		<button type="button" onclick="BFS()">BFS</button><br>
-		</div>
-
 		<div class="btn">
 		<button type="button" onclick="Restart()">Refresh Graph</button><br>
 		</div>
-
 		<div class="btn">
 		<button type="btn" onclick="CleanCanvas()">Clean Up</button><br>
 		</div>
